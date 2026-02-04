@@ -1,162 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>shauryx | terminal portfolio</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>f1shaurya | F1 Interface</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+:root {
+  --red:#e10600;
+  --green:#00ff9c;
+  --dark:#000;
+  --panel:#0f0f0f;
+  color-scheme: dark;
+}
 
-    body {
-      margin: 0;
-      background: #0d1117;
-      color: #00ff9c;
-      font-family: 'JetBrains Mono', monospace;
-    }
+body {
+  margin:0;
+  background:var(--dark);
+  color:#fff;
+  font-family:'Orbitron',sans-serif;
+}
 
-    .terminal {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #010409;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,255,156,0.15);
-    }
+/* COMMON */
+.hidden { display:none; }
 
-    .header {
-      margin-bottom: 20px;
-      color: #00eaff;
-    }
+/* DESKTOP */
+.desktop {
+  padding:20px;
+}
+.desktop .grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+.panel {
+  background:var(--panel);
+  padding:20px;
+  border-left:4px solid var(--red);
+}
+.panel h3 { color:var(--red); margin-top:0; }
 
-    .output {
-      white-space: pre-wrap;
-      line-height: 1.6;
-    }
+/* MOBILE HUD */
+.mobile {
+  height:100vh;
+  padding:10px;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+}
 
-    .input-line {
-      display: flex;
-      align-items: center;
-    }
+.top {
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
 
-    .prompt {
-      margin-right: 8px;
-      color: #00eaff;
-    }
+.center {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
 
-    input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #00ff9c;
-      font-family: inherit;
-      font-size: 16px;
-      flex: 1;
-    }
+.speed {
+  font-size:72px;
+}
 
-    .cursor {
-      display: inline-block;
-      width: 10px;
-      animation: blink 1s infinite;
-    }
+.rpm-bar {
+  width:100%;
+  height:12px;
+  background:#222;
+  border-radius:6px;
+  margin:12px 0;
+  overflow:hidden;
+}
 
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
+.rpm-fill {
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--green),yellow,var(--red));
+}
 
-    @media (max-width: 600px) {
-      .terminal {
-        margin: 10px;
-        font-size: 14px;
-      }
-    }
-  </style>
+.bottom {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.card {
+  background:var(--panel);
+  padding:10px;
+  text-align:center;
+  border-top:3px solid var(--red);
+}
+.big { font-size:28px; }
+.small { font-size:11px; opacity:.7; }
+</style>
 </head>
 <body>
 
-  <div class="terminal">
-    <div class="header">
-      shauryx@portfolio:~$ welcome
-      <br>
-      Type <strong>help</strong> to see available commands.
-    </div>
+<!-- DESKTOP DASHBOARD -->
+<div id="desktop" class="desktop hidden">
+  <h2>FIA RACE CONTROL — f1shaurya</h2>
+  <div class="grid">
+    <div class="panel"><h3>SPEED</h3><div id="dSpeed">0 KM/H</div></div>
+    <div class="panel"><h3>RPM</h3><div id="dRpm">0%</div></div>
+    <div class="panel"><h3>LAP</h3><div id="dLap">1 / 58</div></div>
+    <div class="panel"><h3>ERS</h3><div id="dErs">100%</div></div>
+    <div class="panel"><h3>FUEL</h3><div id="dFuel">100%</div></div>
+    <div class="panel"><h3>STATUS</h3><div>GREEN FLAG</div></div>
+  </div>
+</div>
 
-    <div id="output" class="output"></div>
-
-    <div class="input-line">
-      <span class="prompt">shauryx@portfolio:~$</span>
-      <input id="commandInput" autocomplete="off" autofocus />
-      <span class="cursor">█</span>
-    </div>
+<!-- MOBILE HUD -->
+<div id="mobile" class="mobile hidden">
+  <div class="top">
+    <div>LAP <span id="mLap">1</span>/58</div>
+    <div style="color:var(--green)">● GREEN</div>
+    <div>P5</div>
   </div>
 
-  <script>
-    const input = document.getElementById("commandInput");
-    const output = document.getElementById("output");
+  <div class="center">
+    <div class="speed" id="mSpeed">0</div>
+    <div class="rpm-bar"><div class="rpm-fill" id="mRpm"></div></div>
+    <div class="big">GEAR <span id="mGear">N</span></div>
+  </div>
 
-    const commands = {
-      help: `
-Available commands:
-- whoami
-- skills
-- projects
-- contact
-- clear
-`,
-      whoami: `
-👨‍💻 shauryx
-Web Developer
+  <div class="bottom">
+    <div class="card"><div class="big" id="mErs">100%</div><div class="small">ERS</div></div>
+    <div class="card"><div class="big" id="mFuel">100%</div><div class="small">FUEL</div></div>
+    <div class="card"><div class="big" id="mTemp">92°</div><div class="small">ENGINE</div></div>
+  </div>
+</div>
 
-I build fast, clean, and modern web applications
-with a focus on performance and design.
-`,
-      skills: `
-⚙️ Skills
-- HTML, CSS, JavaScript
-- React, Next.js
-- Node.js, Express
-- MongoDB
-- Git & GitHub
-`,
-      projects: `
-📂 Projects
-- Terminal Portfolio (this site)
-- E-commerce Web App
-- Dashboard UI
-`,
-      contact: `
-📬 Contact
-Email: yourname@email.com
-GitHub: https://github.com/shauryx
-LinkedIn: https://linkedin.com/in/shauryx
-`,
-      clear: ""
-    };
+<script>
+function switchUI() {
+  const isMobile = window.innerWidth <= 768;
+  document.getElementById("mobile").classList.toggle("hidden", !isMobile);
+  document.getElementById("desktop").classList.toggle("hidden", isMobile);
+}
 
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        const command = input.value.trim();
-        output.innerHTML += `\nshauryx@portfolio:~$ ${command}\n`;
+switchUI();
+window.addEventListener("resize", switchUI);
+window.addEventListener("orientationchange", switchUI);
 
-        if (command === "clear") {
-          output.innerHTML = "";
-        } else if (commands[command]) {
-          output.innerHTML += commands[command];
-        } else if (command !== "") {
-          output.innerHTML += `Command not found: ${command}\n`;
-        }
+/* FAKE TELEMETRY */
+let speed = 0;
+let lap = 1;
 
-        input.value = "";
-        output.scrollTop = output.scrollHeight;
-      }
-    });
-  </script>
+setInterval(() => {
+  speed = Math.floor(Math.random() * 330);
+  const rpm = Math.min(speed / 3.2, 100);
+
+  /* desktop */
+  dSpeed.textContent = speed + " KM/H";
+  dRpm.textContent = Math.floor(rpm) + "%";
+  dLap.textContent = lap + " / 58";
+  dErs.textContent = Math.floor(Math.random() * 100) + "%";
+  dFuel.textContent = Math.max(10, 100 - lap * 2) + "%";
+
+  /* mobile */
+  mSpeed.textContent = speed;
+  mRpm.style.width = rpm + "%";
+  mGear.textContent = speed === 0 ? "N" : Math.min(8, Math.floor(speed / 40));
+  mLap.textContent = lap;
+  mErs.textContent = Math.floor(Math.random() * 100) + "%";
+  mFuel.textContent = Math.max(10, 100 - lap * 2) + "%";
+  mTemp.textContent = 85 + Math.floor(Math.random() * 20) + "°";
+
+  if (speed > 290 && Math.random() > 0.85) {
+    lap++;
+    if (lap > 58) lap = 1;
+  }
+}, 800);
+</script>
 
 </body>
 </html>
