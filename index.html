@@ -3,58 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glitch Terminal Site</title>
+<title>Visual Terminal Site</title>
 <style>
   /* Reset & body */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #0a0a0a;
-    color: #cccccc;
+    background: #0d0d0d;
+    color: #d0d0d0;
     font-family: 'Fira Code', monospace;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
-    padding: 10px;
+    padding: 20px;
+    flex-direction: column;
   }
 
   /* Terminal container */
   .terminal {
     width: 100%;
-    max-width: 800px;
-    background: #101010;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 20px #00ff00;
-    overflow: hidden;
+    max-width: 900px;
+    background: #1a1a1a;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 40px rgba(0,255,0,0.2);
   }
 
-  /* Glitch heading */
-  .glitch {
+  /* Heading */
+  .heading {
     font-size: 2em;
-    position: relative;
-    color: #ccc;
-    animation: glitch 1s infinite;
-    text-align: center;
+    color: #ffffff;
     margin-bottom: 20px;
-    word-wrap: break-word;
-  }
-
-  @keyframes glitch {
-    0% { text-shadow: 2px 0 #ff00c8, -2px 0 #00fff9; }
-    20% { text-shadow: -2px -2px #ff00c8, 2px 2px #00fff9; }
-    40% { text-shadow: 2px 2px #ff00c8, -2px -2px #00fff9; }
-    60% { text-shadow: -2px 2px #ff00c8, 2px -2px #00fff9; }
-    80% { text-shadow: 2px -2px #ff00c8, -2px 2px #00fff9; }
-    100% { text-shadow: 2px 0 #ff00c8, -2px 0 #00fff9; }
   }
 
   /* Terminal output */
-  .output {
+  #terminalOutput {
+    min-height: 200px;
     font-size: 1em;
-    line-height: 1.5;
+    line-height: 1.6;
     white-space: pre-wrap;
-    min-height: 150px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
   }
 
   /* Command input */
@@ -72,20 +61,21 @@
   #commandInput {
     background: none;
     border: none;
-    color: #cccccc;
+    color: #d0d0d0;
     flex: 1;
     outline: none;
     font-family: inherit;
     font-size: inherit;
   }
 
-  /* Blinking cursor for input */
+  /* Blinking cursor */
   .cursor {
     display: inline-block;
-    width: 10px;
-    background: #cccccc;
-    margin-left: 2px;
+    width: 12px;
+    background: #d0d0d0;
+    margin-left: 5px;
     animation: blink 0.7s infinite;
+    vertical-align: middle;
   }
 
   @keyframes blink {
@@ -93,91 +83,152 @@
     25%, 75% { opacity: 0; }
   }
 
+  /* Canvas for visuals */
+  #visualCanvas {
+    width: 100%;
+    height: 300px;
+    background: #0d0d0d;
+    display: block;
+    margin-top: 20px;
+    border: 1px solid #333;
+    border-radius: 5px;
+  }
+
   /* Responsive */
   @media (max-width: 600px) {
-    .glitch { font-size: 1.5em; }
-    .output { font-size: 0.9em; }
+    .heading { font-size: 1.5em; }
+    #visualCanvas { height: 200px; }
   }
 </style>
 </head>
 <body>
 
 <div class="terminal">
-  <div class="glitch">WELCOME TO MY TERMINAL SITE</div>
-  <div class="output" id="terminalOutput"></div>
+  <div class="heading">WELCOME TO MY TERMINAL SITE<span class="cursor"></span></div>
+  <div id="terminalOutput"></div>
   <div class="input-line">
     <span class="prompt">&gt;</span>
-    <input type="text" id="commandInput" autofocus autocomplete="off">
-    <span class="cursor"></span>
+    <input type="text" id="commandInput" autofocus autocomplete="off" placeholder="Type a command...">
   </div>
 </div>
+
+<canvas id="visualCanvas"></canvas>
 
 <script>
 const terminalOutput = document.getElementById('terminalOutput');
 const commandInput = document.getElementById('commandInput');
+const canvas = document.getElementById('visualCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animationRunning = false;
+let bgColor = '#0d0d0d';
 
-const commands = {
-  help: "Available commands:\nhelp - show commands\nfact - random fact\nquote - random quote\nclear - clear screen",
-  fact: [
-    "Honey never spoils.",
-    "Bananas are berries, but strawberries aren't.",
-    "Octopuses have three hearts.",
-    "There are more stars in the universe than grains of sand on Earth."
-  ],
-  quote: [
-    "The best way to predict the future is to invent it.",
-    "Stay hungry, stay foolish.",
-    "Code is like humor. When you have to explain it, it’s bad."
-  ]
-};
+// Resize canvas
+function resizeCanvas() {
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-function getRandom(array) {
-  return array[Math.floor(Math.random() * array.length)];
+// Particle animation
+function createParticles() {
+  particles = [];
+  for(let i=0;i<100;i++){
+    particles.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      vx: (Math.random()-0.5)*2,
+      vy: (Math.random()-0.5)*2,
+      size: Math.random()*3+1,
+      color:'lime'
+    });
+  }
 }
 
-function handleCommand(input) {
-  input = input.toLowerCase().trim();
-  if(input === "") return;
-  switch(input) {
-    case "help":
-      printLine(commands.help);
-      break;
-    case "fact":
-      printLine(getRandom(commands.fact));
-      break;
-    case "quote":
-      printLine(getRandom(commands.quote));
-      break;
-    case "clear":
-      terminalOutput.textContent = "";
-      break;
-    default:
-      printLine(`Unknown command: ${input}`);
+function drawParticles() {
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fill();
+    p.x+=p.vx;
+    p.y+=p.vy;
+    if(p.x<0||p.x>canvas.width)p.vx*=-1;
+    if(p.y<0||p.y>canvas.height)p.vy*=-1;
+  });
+  if(animationRunning) requestAnimationFrame(drawParticles);
+}
+
+// Commands
+const commands = {
+  help: "Available commands:\nhelp - show commands\nstart - start particle animation\nbg - change background color\nclock - show digital clock\nclear - clear terminal",
+  start: () => {
+    animationRunning=true;
+    createParticles();
+    drawParticles();
+    return "Particle animation started!";
+  },
+  bg: () => {
+    const colors=['#0d0d0d','#101020','#201010','#001020','#202000'];
+    bgColor=colors[Math.floor(Math.random()*colors.length)];
+    return "Background color changed!";
+  },
+  clock: () => {
+    animationRunning=false;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = 'lime';
+    ctx.font = '40px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(timeStr, canvas.width/2, canvas.height/2);
+    return "Clock displayed!";
+  },
+  clear: () => {
+    terminalOutput.textContent="";
+    return "";
+  }
+};
+
+// Handle typed commands
+function handleCommand(input){
+  input=input.trim().toLowerCase();
+  if(input==="") return;
+  if(commands[input]){
+    const result = typeof commands[input]==="function" ? commands[input]() : commands[input];
+    printLine(result);
+  }else{
+    printLine(`Unknown command: ${input}`);
   }
 }
 
 // Typing effect
-function printLine(text) {
-  let i = 0;
-  function typeChar() {
-    if(i < text.length) {
-      terminalOutput.textContent += text[i];
+function printLine(text){
+  let i=0;
+  function typeChar(){
+    if(i<text.length){
+      terminalOutput.textContent+=text[i];
       i++;
-      setTimeout(typeChar, 25);
-    } else {
-      terminalOutput.textContent += "\n";
+      setTimeout(typeChar,20);
+    }else{
+      terminalOutput.textContent+="\n";
     }
   }
   typeChar();
 }
 
-// Handle enter key
-commandInput.addEventListener("keydown", function(e) {
-  if(e.key === "Enter") {
-    const value = commandInput.value;
-    terminalOutput.textContent += `> ${value}\n`;
+// Enter key
+commandInput.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){
+    const value=commandInput.value;
+    terminalOutput.textContent+=`> ${value}\n`;
     handleCommand(value);
-    commandInput.value = "";
+    commandInput.value="";
     terminalOutput.scrollTop = terminalOutput.scrollHeight;
   }
 });
