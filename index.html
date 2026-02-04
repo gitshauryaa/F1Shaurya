@@ -3,51 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secret Terminal Experience</title>
+<title>Shaurya's Interactive Terminal</title>
 <style>
+/* --- General Reset & Terminal Styling --- */
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: 'Fira Code', monospace;
-  background: #0a0a0a;
-  color: #00ff00;
+  background: linear-gradient(135deg, #0d0d0d, #1a1a1a); /* subtle gradient for modern feel */
+  color: #d0d0d0; /* soft grey text */
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-body { display: flex; flex-direction: column; }
-
+/* --- Terminal container --- */
 #terminal {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 25px;
   overflow-y: auto;
   white-space: pre-wrap;
   line-height: 1.5em;
+  text-shadow: 0 0 5px #888; /* subtle glow for modern terminal */
+  font-size: 1em;
 }
 
+/* --- Blinking cursor --- */
 .cursor {
   display: inline-block;
   width: 12px;
-  background: #00ff00;
+  background: #d0d0d0;
   margin-left: 3px;
   animation: blink 0.7s infinite;
   vertical-align: middle;
+  box-shadow: 0 0 5px #888;
 }
 
-@keyframes blink { 0%,50%,100%{opacity:1;}25%,75%{opacity:0;} }
+@keyframes blink { 0%,50%,100%{opacity:1;} 25%,75%{opacity:0;} }
 
+/* --- Input line --- */
 #inputLine { display: flex; align-items: center; font-size: 1em; margin-top:5px; }
-#prompt { margin-right:5px; font-weight:bold; animation:flicker 1s infinite; }
+#prompt { margin-right:5px; font-weight:bold; animation:flicker 1s infinite; color: #d0d0d0; }
 @keyframes flicker {
-  0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;color:#00ff00;}
-  20%,22%,24%,55%{opacity:0.3;color:#33ff33;}
+  0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;color:#d0d0d0;}
+  20%,22%,24%,55%{opacity:0.5;color:#f0f0f0;}
 }
-#commandInput { flex:1; background:none; border:none; outline:none; color:#00ff00; font-family:inherit; font-size:inherit; }
 
+#commandInput {
+  flex:1;
+  background:none;
+  border:none;
+  outline:none;
+  color:#d0d0d0;
+  font-family:inherit;
+  font-size:inherit;
+}
+
+/* --- Mobile responsiveness --- */
 @media(max-width:600px){
-  #terminal{padding:10px;}
+  #terminal{padding:15px; font-size:0.9em;}
   #commandInput{font-size:0.9em;}
 }
 </style>
@@ -66,12 +83,12 @@ body { display: flex; flex-direction: column; }
 const terminal = document.getElementById('terminal');
 const input = document.getElementById('commandInput');
 
+// --- Boot sequence messages ---
 let sequence = [
-  "Booting secret terminal...",
-  "Loading mysterious modules...",
+  "Booting modern terminal...",
+  "Loading modules...",
   "Decrypting hidden files...",
   "Accessing forbidden data...",
-  "Warning: Unauthorized users will be detected...",
   "Almost ready..."
 ];
 
@@ -85,11 +102,11 @@ function typeLine(text, callback){
       terminal.innerHTML += text[i];
       i++;
       terminal.scrollTop = terminal.scrollHeight;
-      setTimeout(typeChar, Math.random()*50+20); // random speed for suspense
+      setTimeout(typeChar, Math.random()*50+20);
     } else {
       terminal.innerHTML += "\n";
       terminal.scrollTop = terminal.scrollHeight;
-      if(callback) setTimeout(callback, 500 + Math.random()*1000); // suspenseful pause
+      if(callback) setTimeout(callback, 500 + Math.random()*1000);
     }
   }
   typeChar();
@@ -108,7 +125,7 @@ function startSequence(){
 }
 startSequence();
 
-// Handle commands
+// Handle user input
 input.addEventListener("keydown", function(e){
   if(e.key === "Enter"){
     const cmd = input.value.trim().toLowerCase();
@@ -123,7 +140,7 @@ input.addEventListener("keydown", function(e){
   }
 });
 
-// Suspenseful reveal after typing start
+// --- Mystery launch sequence ---
 function launchMystery(){
   input.disabled = true;
   let messages = [
@@ -137,9 +154,16 @@ function launchMystery(){
     if(msgIndex < messages.length){
       typeLine(messages[msgIndex], () => { msgIndex++; revealNext(); });
     } else {
-      typeLine("✨ Welcome to the hidden experience! ✨\nExplore and enjoy...", () => {
-        input.disabled = false;
-        input.focus();
+      // --- Final personal welcome ---
+      typeLine("✨ Welcome to the hidden experience! ✨\n", () => {
+        typeLine("Hi, I am Shaurya,", () => {
+          typeLine("17 (teen) year old guy", () => {
+            typeLine("With some coding skills", () => {
+              input.disabled = false;
+              input.focus();
+            });
+          });
+        });
       });
     }
   }
