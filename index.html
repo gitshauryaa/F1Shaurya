@@ -3,72 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Immersive Terminal</title>
+<title>Secret Terminal Experience</title>
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: 'Fira Code', monospace;
-    background: #0d0d0d;
-    color: #00ff00;
-    overflow: hidden;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Fira Code', monospace;
+  background: #0a0a0a;
+  color: #00ff00;
+  overflow: hidden;
+}
 
-  body {
-    display: flex;
-    flex-direction: column;
-  }
+body { display: flex; flex-direction: column; }
 
-  #terminal {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    line-height: 1.5em;
-  }
+#terminal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.5em;
+}
 
-  .cursor {
-    display: inline-block;
-    width: 12px;
-    background: #00ff00;
-    margin-left: 3px;
-    animation: blink 0.7s infinite;
-    vertical-align: middle;
-  }
+.cursor {
+  display: inline-block;
+  width: 12px;
+  background: #00ff00;
+  margin-left: 3px;
+  animation: blink 0.7s infinite;
+  vertical-align: middle;
+}
 
-  @keyframes blink {
-    0%,50%,100% { opacity: 1; }
-    25%,75% { opacity: 0; }
-  }
+@keyframes blink { 0%,50%,100%{opacity:1;}25%,75%{opacity:0;} }
 
-  #inputLine {
-    display: flex;
-    align-items: center;
-    font-size: 1em;
-  }
+#inputLine { display: flex; align-items: center; font-size: 1em; margin-top:5px; }
+#prompt { margin-right:5px; font-weight:bold; animation:flicker 1s infinite; }
+@keyframes flicker {
+  0%,19%,21%,23%,25%,54%,56%,100%{opacity:1;color:#00ff00;}
+  20%,22%,24%,55%{opacity:0.3;color:#33ff33;}
+}
+#commandInput { flex:1; background:none; border:none; outline:none; color:#00ff00; font-family:inherit; font-size:inherit; }
 
-  #prompt {
-    margin-right: 5px;
-  }
-
-  #commandInput {
-    flex: 1;
-    background: none;
-    border: none;
-    outline: none;
-    color: #00ff00;
-    font-family: inherit;
-    font-size: inherit;
-  }
-
-  /* Mobile responsiveness */
-  @media (max-width: 600px) {
-    #terminal { padding: 10px; }
-    #commandInput { font-size: 0.9em; }
-  }
+@media(max-width:600px){
+  #terminal{padding:10px;}
+  #commandInput{font-size:0.9em;}
+}
 </style>
 </head>
 <body>
@@ -77,7 +58,7 @@
 
 <div id="inputLine">
   <span id="prompt">&gt;</span>
-  <input type="text" id="commandInput" autocomplete="off" autofocus>
+  <input type="text" id="commandInput" autocomplete="off" disabled>
   <span class="cursor"></span>
 </div>
 
@@ -85,80 +66,85 @@
 const terminal = document.getElementById('terminal');
 const input = document.getElementById('commandInput');
 
-let bootMessages = [
-  "Initializing system...",
-  "Loading kernel modules...",
-  "Detecting hardware...",
-  "Starting services...",
-  "System online. Type 'help' to begin."
+let sequence = [
+  "Booting secret terminal...",
+  "Loading mysterious modules...",
+  "Decrypting hidden files...",
+  "Accessing forbidden data...",
+  "Warning: Unauthorized users will be detected...",
+  "Almost ready..."
 ];
 
-// Commands
-const commands = {
-  help: "Available commands:\nhelp - list commands\nclear - clear terminal\nbg - change background\nclock - show clock",
-  clear: () => { terminal.innerHTML = ""; return ""; },
-  bg: () => { 
-    const colors = ['#0d0d0d','#101020','#201010','#001020','#202000'];
-    document.body.style.background = colors[Math.floor(Math.random()*colors.length)];
-    return "Background color changed.";
-  },
-  clock: () => {
-    const now = new Date();
-    return "Current time: " + now.toLocaleTimeString();
-  }
-};
+let index = 0;
 
-// Typing animation for boot
-function typeLine(text, callback) {
+// Typing animation with suspense
+function typeLine(text, callback){
   let i = 0;
-  function typeChar() {
-    if(i < text.length){
+  function typeChar(){
+    if(i<text.length){
       terminal.innerHTML += text[i];
       i++;
       terminal.scrollTop = terminal.scrollHeight;
-      setTimeout(typeChar, 30);
+      setTimeout(typeChar, Math.random()*50+20); // random speed for suspense
     } else {
       terminal.innerHTML += "\n";
       terminal.scrollTop = terminal.scrollHeight;
-      if(callback) callback();
+      if(callback) setTimeout(callback, 500 + Math.random()*1000); // suspenseful pause
     }
   }
   typeChar();
 }
 
-// Boot sequence
-function bootSystem(messages, index = 0){
-  if(index < messages.length){
-    typeLine(messages[index], () => bootSystem(messages, index+1));
-  }
-}
-
-bootSystem(bootMessages);
-
-// Handle user commands
-function handleCommand(cmd){
-  cmd = cmd.trim().toLowerCase();
-  if(!cmd) return;
-  if(commands[cmd]){
-    const result = typeof commands[cmd] === "function" ? commands[cmd]() : commands[cmd];
-    if(result) typeLine(result);
+// Start suspense sequence
+function startSequence(){
+  if(index < sequence.length){
+    typeLine(sequence[index], () => { index++; startSequence(); });
   } else {
-    typeLine("Unknown command: " + cmd);
+    typeLine("System ready. Type 'start' to continue...", () => {
+      input.disabled = false;
+      input.focus();
+    });
   }
 }
+startSequence();
 
-// Enter key
+// Handle commands
 input.addEventListener("keydown", function(e){
   if(e.key === "Enter"){
-    const command = input.value;
-    typeLine("> " + command);
-    handleCommand(command);
+    const cmd = input.value.trim().toLowerCase();
+    terminal.innerHTML += "> " + cmd + "\n";
     input.value = "";
+    if(cmd==="start"){
+      launchMystery();
+    } else {
+      terminal.innerHTML += "Unknown command.\n";
+    }
+    terminal.scrollTop = terminal.scrollHeight;
   }
 });
 
-// Focus input if user clicks anywhere
-document.addEventListener("click", () => input.focus());
+// Suspenseful reveal after typing start
+function launchMystery(){
+  input.disabled = true;
+  let messages = [
+    "Decrypting secrets...",
+    "Analyzing hidden patterns...",
+    "Summoning unknown content...",
+    "Almost there..."
+  ];
+  let msgIndex = 0;
+  function revealNext(){
+    if(msgIndex < messages.length){
+      typeLine(messages[msgIndex], () => { msgIndex++; revealNext(); });
+    } else {
+      typeLine("✨ Welcome to the hidden experience! ✨\nExplore and enjoy...", () => {
+        input.disabled = false;
+        input.focus();
+      });
+    }
+  }
+  revealNext();
+}
 </script>
 
 </body>
