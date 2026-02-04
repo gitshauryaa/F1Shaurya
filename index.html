@@ -2,213 +2,90 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>f1shaurya | F1 Terminal HUD</title>
+<title>f1shaurya | Click Chaos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-
 <style>
-:root{
-  --green:#00ff9c;
-  --red:#e10600;
-  --dark:#000;
-  --panel:#0b0b0b;
-}
-
-body{
-  margin:0;
-  background:var(--dark);
-  color:var(--green);
-  font-family:'JetBrains Mono', monospace;
-}
-
-/* TERMINAL OVERLAY */
-.terminal {
-  position:fixed;
-  inset:0;
-  padding:12px;
-  pointer-events:none;
-  font-size:12px;
-  opacity:.85;
-}
-
-.cursor {
-  animation: blink 1s infinite;
-}
-@keyframes blink {
-  50%{opacity:0}
-}
-
-/* HUD COMMON */
-.hidden{display:none}
-
-/* MOBILE HUD */
-.mobile {
-  height:100vh;
-  display:grid;
-  grid-template-rows:auto 1fr auto;
-  padding:10px;
-  font-family:'Orbitron',sans-serif;
-}
-
-.top {
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-}
-
-.center {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-
-.speed {
-  font-size:72px;
-  color:white;
-}
-
-.rpm-bar {
-  width:100%;
-  height:10px;
-  background:#222;
-  border-radius:6px;
-  overflow:hidden;
-  margin:12px 0;
-}
-
-.rpm-fill {
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,var(--green),yellow,var(--red));
-}
-
-.bottom {
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-}
-
-.card {
-  background:var(--panel);
-  padding:8px;
-  text-align:center;
-  border-top:2px solid var(--red);
-  color:white;
-}
-
-.big{font-size:24px}
-.small{font-size:10px;opacity:.7}
-
-/* DESKTOP */
-.desktop {
-  padding:20px;
-  font-family:'JetBrains Mono', monospace;
-}
-.grid {
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
-}
-.panel {
-  background:var(--panel);
-  padding:20px;
-  border-left:4px solid var(--green);
-}
-.panel h3 {
-  margin:0 0 10px;
-  color:white;
-}
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #111;
+    cursor: crosshair;
+    user-select: none;
+    font-family: sans-serif;
+  }
+  .shape {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform;
+  }
+  h1 {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #0f0;
+    font-size: 24px;
+    font-family: monospace;
+    text-shadow: 0 0 8px #0f0;
+    z-index: 9999;
+  }
 </style>
 </head>
 <body>
-
-<!-- DESKTOP -->
-<div id="desktop" class="desktop hidden">
-  <h2>FIA RACE CONTROL :: f1shaurya</h2>
-  <div class="grid">
-    <div class="panel"><h3>SPEED</h3><div id="dSpeed"></div></div>
-    <div class="panel"><h3>RPM</h3><div id="dRpm"></div></div>
-    <div class="panel"><h3>LAP</h3><div id="dLap"></div></div>
-  </div>
-</div>
-
-<!-- MOBILE HUD -->
-<div id="mobile" class="mobile hidden">
-  <div class="top">
-    <div>LAP <span id="mLap">1</span>/58</div>
-    <div style="color:var(--green)">● LIVE</div>
-    <div>P5</div>
-  </div>
-
-  <div class="center">
-    <div class="speed" id="mSpeed">0</div>
-    <div class="rpm-bar"><div class="rpm-fill" id="mRpm"></div></div>
-    <div class="big">GEAR <span id="mGear">N</span></div>
-  </div>
-
-  <div class="bottom">
-    <div class="card"><div class="big" id="mErs"></div><div class="small">ERS</div></div>
-    <div class="card"><div class="big" id="mFuel"></div><div class="small">FUEL</div></div>
-    <div class="card"><div class="big" id="mTemp"></div><div class="small">ENGINE</div></div>
-  </div>
-</div>
-
-<!-- TERMINAL -->
-<div class="terminal" id="terminal">
-  FIA RACE CONTROL v1.0<br>
-  USER: f1shaurya<br>
-  MODE: LIVE TELEMETRY<br>
-  STATUS: GREEN FLAG<br>
-  ------------------------------<br>
-  <span id="log"></span><span class="cursor">█</span>
-</div>
-
+<h1>Click Chaos 🔥</h1>
 <script>
-const mobile = document.getElementById("mobile");
-const desktop = document.getElementById("desktop");
+const colors = ['#ff3c00','#00ffd1','#fffd00','#ff00ff','#00aaff','#ff6f00','#ffffff'];
+const shapes = [];
 
-function switchUI(){
-  const isMobile = innerWidth <= 768;
-  mobile.classList.toggle("hidden", !isMobile);
-  desktop.classList.toggle("hidden", isMobile);
-}
-switchUI();
-addEventListener("resize", switchUI);
-
-/* TELEMETRY */
-let speed=0, lap=1;
-const log = document.getElementById("log");
-
-setInterval(()=>{
-  speed = Math.floor(Math.random()*330);
-  const rpm = Math.min(speed/3.2,100);
-
-  // mobile
-  mSpeed.textContent = speed;
-  mRpm.style.width = rpm+"%";
-  mGear.textContent = speed===0?"N":Math.min(8,Math.floor(speed/40));
-  mLap.textContent = lap;
-  mErs.textContent = Math.floor(Math.random()*100)+"%";
-  mFuel.textContent = Math.max(10,100-lap*2)+"%";
-  mTemp.textContent = 85+Math.floor(Math.random()*20)+"°";
-
-  // desktop
-  dSpeed.textContent = speed+" KM/H";
-  dRpm.textContent = Math.floor(rpm)+" %";
-  dLap.textContent = lap+" / 58";
-
-  // terminal log
-  log.innerHTML += `\n> SPD:${speed} RPM:${Math.floor(rpm)}% ERS:${mErs.textContent}`;
-  log.scrollTop = log.scrollHeight;
-
-  if(speed>290 && Math.random()>0.85){
-    lap++; if(lap>58) lap=1;
-    log.innerHTML += `\n> LAP ${lap} STARTED`;
+document.body.addEventListener('click', e => {
+  for(let i=0; i<5; i++){ // spawn multiple shapes per click
+    const div = document.createElement('div');
+    div.className = 'shape';
+    const size = Math.random()*40 + 10;
+    div.style.width = size + 'px';
+    div.style.height = size + 'px';
+    div.style.background = colors[Math.floor(Math.random()*colors.length)];
+    div.style.left = e.clientX - size/2 + 'px';
+    div.style.top = e.clientY - size/2 + 'px';
+    div.dx = (Math.random()-0.5)*8;
+    div.dy = (Math.random()-0.5)*8;
+    div.rotate = Math.random()*360;
+    div.dRotate = (Math.random()-0.5)*10;
+    document.body.appendChild(div);
+    shapes.push(div);
   }
-},900);
-</script>
+});
 
+// animation loop
+function animate(){
+  for(let i=0; i<shapes.length; i++){
+    const s = shapes[i];
+    let x = parseFloat(s.style.left);
+    let y = parseFloat(s.style.top);
+    x += s.dx;
+    y += s.dy;
+    s.rotate += s.dRotate;
+
+    // bounce off edges
+    if(x < 0 || x + s.offsetWidth > window.innerWidth) s.dx *= -1;
+    if(y < 0 || y + s.offsetHeight > window.innerHeight) s.dy *= -1;
+
+    s.style.left = x + 'px';
+    s.style.top = y + 'px';
+    s.style.transform = `rotate(${s.rotate}deg)`;
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+// optional: keyboard press clears screen
+document.addEventListener('keydown', e => {
+  if(e.key === 'c'){
+    shapes.forEach(s => s.remove());
+    shapes.length = 0;
+  }
+});
+</script>
 </body>
 </html>
