@@ -2,58 +2,59 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>f1shaurya | F1 Interface</title>
+<title>f1shaurya | F1 Terminal HUD</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --red:#e10600;
+:root{
   --green:#00ff9c;
+  --red:#e10600;
   --dark:#000;
-  --panel:#0f0f0f;
-  color-scheme: dark;
+  --panel:#0b0b0b;
 }
 
-body {
+body{
   margin:0;
   background:var(--dark);
-  color:#fff;
-  font-family:'Orbitron',sans-serif;
+  color:var(--green);
+  font-family:'JetBrains Mono', monospace;
 }
 
-/* COMMON */
-.hidden { display:none; }
+/* TERMINAL OVERLAY */
+.terminal {
+  position:fixed;
+  inset:0;
+  padding:12px;
+  pointer-events:none;
+  font-size:12px;
+  opacity:.85;
+}
 
-/* DESKTOP */
-.desktop {
-  padding:20px;
+.cursor {
+  animation: blink 1s infinite;
 }
-.desktop .grid {
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
+@keyframes blink {
+  50%{opacity:0}
 }
-.panel {
-  background:var(--panel);
-  padding:20px;
-  border-left:4px solid var(--red);
-}
-.panel h3 { color:var(--red); margin-top:0; }
+
+/* HUD COMMON */
+.hidden{display:none}
 
 /* MOBILE HUD */
 .mobile {
   height:100vh;
-  padding:10px;
   display:grid;
   grid-template-rows:auto 1fr auto;
+  padding:10px;
+  font-family:'Orbitron',sans-serif;
 }
 
 .top {
   display:flex;
   justify-content:space-between;
-  font-size:14px;
+  font-size:13px;
 }
 
 .center {
@@ -65,15 +66,16 @@ body {
 
 .speed {
   font-size:72px;
+  color:white;
 }
 
 .rpm-bar {
   width:100%;
-  height:12px;
+  height:10px;
   background:#222;
   border-radius:6px;
-  margin:12px 0;
   overflow:hidden;
+  margin:12px 0;
 }
 
 .rpm-fill {
@@ -85,31 +87,50 @@ body {
 .bottom {
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:10px;
+  gap:8px;
 }
 
 .card {
   background:var(--panel);
-  padding:10px;
+  padding:8px;
   text-align:center;
-  border-top:3px solid var(--red);
+  border-top:2px solid var(--red);
+  color:white;
 }
-.big { font-size:28px; }
-.small { font-size:11px; opacity:.7; }
+
+.big{font-size:24px}
+.small{font-size:10px;opacity:.7}
+
+/* DESKTOP */
+.desktop {
+  padding:20px;
+  font-family:'JetBrains Mono', monospace;
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+.panel {
+  background:var(--panel);
+  padding:20px;
+  border-left:4px solid var(--green);
+}
+.panel h3 {
+  margin:0 0 10px;
+  color:white;
+}
 </style>
 </head>
 <body>
 
-<!-- DESKTOP DASHBOARD -->
+<!-- DESKTOP -->
 <div id="desktop" class="desktop hidden">
-  <h2>FIA RACE CONTROL — f1shaurya</h2>
+  <h2>FIA RACE CONTROL :: f1shaurya</h2>
   <div class="grid">
-    <div class="panel"><h3>SPEED</h3><div id="dSpeed">0 KM/H</div></div>
-    <div class="panel"><h3>RPM</h3><div id="dRpm">0%</div></div>
-    <div class="panel"><h3>LAP</h3><div id="dLap">1 / 58</div></div>
-    <div class="panel"><h3>ERS</h3><div id="dErs">100%</div></div>
-    <div class="panel"><h3>FUEL</h3><div id="dFuel">100%</div></div>
-    <div class="panel"><h3>STATUS</h3><div>GREEN FLAG</div></div>
+    <div class="panel"><h3>SPEED</h3><div id="dSpeed"></div></div>
+    <div class="panel"><h3>RPM</h3><div id="dRpm"></div></div>
+    <div class="panel"><h3>LAP</h3><div id="dLap"></div></div>
   </div>
 </div>
 
@@ -117,7 +138,7 @@ body {
 <div id="mobile" class="mobile hidden">
   <div class="top">
     <div>LAP <span id="mLap">1</span>/58</div>
-    <div style="color:var(--green)">● GREEN</div>
+    <div style="color:var(--green)">● LIVE</div>
     <div>P5</div>
   </div>
 
@@ -128,52 +149,65 @@ body {
   </div>
 
   <div class="bottom">
-    <div class="card"><div class="big" id="mErs">100%</div><div class="small">ERS</div></div>
-    <div class="card"><div class="big" id="mFuel">100%</div><div class="small">FUEL</div></div>
-    <div class="card"><div class="big" id="mTemp">92°</div><div class="small">ENGINE</div></div>
+    <div class="card"><div class="big" id="mErs"></div><div class="small">ERS</div></div>
+    <div class="card"><div class="big" id="mFuel"></div><div class="small">FUEL</div></div>
+    <div class="card"><div class="big" id="mTemp"></div><div class="small">ENGINE</div></div>
   </div>
 </div>
 
+<!-- TERMINAL -->
+<div class="terminal" id="terminal">
+  FIA RACE CONTROL v1.0<br>
+  USER: f1shaurya<br>
+  MODE: LIVE TELEMETRY<br>
+  STATUS: GREEN FLAG<br>
+  ------------------------------<br>
+  <span id="log"></span><span class="cursor">█</span>
+</div>
+
 <script>
-function switchUI() {
-  const isMobile = window.innerWidth <= 768;
-  document.getElementById("mobile").classList.toggle("hidden", !isMobile);
-  document.getElementById("desktop").classList.toggle("hidden", isMobile);
+const mobile = document.getElementById("mobile");
+const desktop = document.getElementById("desktop");
+
+function switchUI(){
+  const isMobile = innerWidth <= 768;
+  mobile.classList.toggle("hidden", !isMobile);
+  desktop.classList.toggle("hidden", isMobile);
 }
-
 switchUI();
-window.addEventListener("resize", switchUI);
-window.addEventListener("orientationchange", switchUI);
+addEventListener("resize", switchUI);
 
-/* FAKE TELEMETRY */
-let speed = 0;
-let lap = 1;
+/* TELEMETRY */
+let speed=0, lap=1;
+const log = document.getElementById("log");
 
-setInterval(() => {
-  speed = Math.floor(Math.random() * 330);
-  const rpm = Math.min(speed / 3.2, 100);
+setInterval(()=>{
+  speed = Math.floor(Math.random()*330);
+  const rpm = Math.min(speed/3.2,100);
 
-  /* desktop */
-  dSpeed.textContent = speed + " KM/H";
-  dRpm.textContent = Math.floor(rpm) + "%";
-  dLap.textContent = lap + " / 58";
-  dErs.textContent = Math.floor(Math.random() * 100) + "%";
-  dFuel.textContent = Math.max(10, 100 - lap * 2) + "%";
-
-  /* mobile */
+  // mobile
   mSpeed.textContent = speed;
-  mRpm.style.width = rpm + "%";
-  mGear.textContent = speed === 0 ? "N" : Math.min(8, Math.floor(speed / 40));
+  mRpm.style.width = rpm+"%";
+  mGear.textContent = speed===0?"N":Math.min(8,Math.floor(speed/40));
   mLap.textContent = lap;
-  mErs.textContent = Math.floor(Math.random() * 100) + "%";
-  mFuel.textContent = Math.max(10, 100 - lap * 2) + "%";
-  mTemp.textContent = 85 + Math.floor(Math.random() * 20) + "°";
+  mErs.textContent = Math.floor(Math.random()*100)+"%";
+  mFuel.textContent = Math.max(10,100-lap*2)+"%";
+  mTemp.textContent = 85+Math.floor(Math.random()*20)+"°";
 
-  if (speed > 290 && Math.random() > 0.85) {
-    lap++;
-    if (lap > 58) lap = 1;
+  // desktop
+  dSpeed.textContent = speed+" KM/H";
+  dRpm.textContent = Math.floor(rpm)+" %";
+  dLap.textContent = lap+" / 58";
+
+  // terminal log
+  log.innerHTML += `\n> SPD:${speed} RPM:${Math.floor(rpm)}% ERS:${mErs.textContent}`;
+  log.scrollTop = log.scrollHeight;
+
+  if(speed>290 && Math.random()>0.85){
+    lap++; if(lap>58) lap=1;
+    log.innerHTML += `\n> LAP ${lap} STARTED`;
   }
-}, 800);
+},900);
 </script>
 
 </body>
