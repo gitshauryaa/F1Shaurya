@@ -3,38 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glitch Terminal Website</title>
+<title>Glitch Terminal Site</title>
 <style>
-  /* Basic terminal style */
+  /* Reset & body */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    margin: 0;
-    height: 100vh;
     background: #0a0a0a;
     color: #cccccc;
     font-family: 'Fira Code', monospace;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    min-height: 100vh;
+    padding: 10px;
   }
 
   /* Terminal container */
   .terminal {
-    width: 90%;
+    width: 100%;
     max-width: 800px;
     background: #101010;
     padding: 20px;
-    box-shadow: 0 0 20px #00ff00;
     border-radius: 5px;
+    box-shadow: 0 0 20px #00ff00;
     overflow: hidden;
   }
 
-  /* Glitch heading effect */
+  /* Glitch heading */
   .glitch {
     font-size: 2em;
     position: relative;
     color: #ccc;
     animation: glitch 1s infinite;
+    text-align: center;
+    margin-bottom: 20px;
+    word-wrap: break-word;
   }
 
   @keyframes glitch {
@@ -46,14 +49,37 @@
     100% { text-shadow: 2px 0 #ff00c8, -2px 0 #00fff9; }
   }
 
-  /* Terminal text animation */
+  /* Terminal output */
   .output {
     font-size: 1em;
-    white-space: pre-wrap;
     line-height: 1.5;
+    white-space: pre-wrap;
+    min-height: 150px;
   }
 
-  /* Blinking cursor */
+  /* Command input */
+  .input-line {
+    display: flex;
+    align-items: center;
+    font-size: 1em;
+  }
+
+  .prompt {
+    color: #00ff00;
+    margin-right: 5px;
+  }
+
+  #commandInput {
+    background: none;
+    border: none;
+    color: #cccccc;
+    flex: 1;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Blinking cursor for input */
   .cursor {
     display: inline-block;
     width: 10px;
@@ -66,6 +92,12 @@
     0%, 50%, 100% { opacity: 1; }
     25%, 75% { opacity: 0; }
   }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .glitch { font-size: 1.5em; }
+    .output { font-size: 0.9em; }
+  }
 </style>
 </head>
 <body>
@@ -73,39 +105,82 @@
 <div class="terminal">
   <div class="glitch">WELCOME TO MY TERMINAL SITE</div>
   <div class="output" id="terminalOutput"></div>
-  <div class="cursor" id="cursor"></div>
+  <div class="input-line">
+    <span class="prompt">&gt;</span>
+    <input type="text" id="commandInput" autofocus autocomplete="off">
+    <span class="cursor"></span>
+  </div>
 </div>
 
 <script>
 const terminalOutput = document.getElementById('terminalOutput');
-const cursor = document.getElementById('cursor');
+const commandInput = document.getElementById('commandInput');
 
-const lines = [
-  "Initializing terminal...",
-  "Loading system files...",
-  "Welcome, user!",
-  "Type 'help' to see commands."
-];
+const commands = {
+  help: "Available commands:\nhelp - show commands\nfact - random fact\nquote - random quote\nclear - clear screen",
+  fact: [
+    "Honey never spoils.",
+    "Bananas are berries, but strawberries aren't.",
+    "Octopuses have three hearts.",
+    "There are more stars in the universe than grains of sand on Earth."
+  ],
+  quote: [
+    "The best way to predict the future is to invent it.",
+    "Stay hungry, stay foolish.",
+    "Code is like humor. When you have to explain it, it’s bad."
+  ]
+};
 
-let lineIndex = 0;
-let charIndex = 0;
+function getRandom(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
 
-function typeLine() {
-  if(lineIndex < lines.length) {
-    if(charIndex < lines[lineIndex].length) {
-      terminalOutput.textContent += lines[lineIndex][charIndex];
-      charIndex++;
-      setTimeout(typeLine, 50); // typing speed
-    } else {
-      terminalOutput.textContent += "\n";
-      lineIndex++;
-      charIndex = 0;
-      setTimeout(typeLine, 500);
-    }
+function handleCommand(input) {
+  input = input.toLowerCase().trim();
+  if(input === "") return;
+  switch(input) {
+    case "help":
+      printLine(commands.help);
+      break;
+    case "fact":
+      printLine(getRandom(commands.fact));
+      break;
+    case "quote":
+      printLine(getRandom(commands.quote));
+      break;
+    case "clear":
+      terminalOutput.textContent = "";
+      break;
+    default:
+      printLine(`Unknown command: ${input}`);
   }
 }
 
-typeLine();
+// Typing effect
+function printLine(text) {
+  let i = 0;
+  function typeChar() {
+    if(i < text.length) {
+      terminalOutput.textContent += text[i];
+      i++;
+      setTimeout(typeChar, 25);
+    } else {
+      terminalOutput.textContent += "\n";
+    }
+  }
+  typeChar();
+}
+
+// Handle enter key
+commandInput.addEventListener("keydown", function(e) {
+  if(e.key === "Enter") {
+    const value = commandInput.value;
+    terminalOutput.textContent += `> ${value}\n`;
+    handleCommand(value);
+    commandInput.value = "";
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  }
+});
 </script>
 
 </body>
