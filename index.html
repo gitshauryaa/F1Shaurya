@@ -2,100 +2,111 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>f1shaurya | YouTube Downloader Terminal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+<title>Glitch Terminal Website</title>
 <style>
-body {
-  margin:0;
-  background:#000;
-  color:#0f0;
-  font-family:'JetBrains Mono', monospace;
-  padding:20px;
-}
-#terminal {
-  white-space: pre-wrap;
-  line-height:1.4em;
-}
-input {
-  background:transparent;
-  border:none;
-  color:#0f0;
-  font-family:'JetBrains Mono', monospace;
-  outline:none;
-  width:80%;
-}
-.cursor {
-  display:inline-block;
-  width:10px;
-  background:#0f0;
-  animation:blink 1s step-start infinite;
-  margin-left:2px;
-}
-@keyframes blink {
-  50%{opacity:0;}
-}
-.log-entry{ margin:4px 0; }
+  /* Basic terminal style */
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #0a0a0a;
+    color: #cccccc;
+    font-family: 'Fira Code', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* Terminal container */
+  .terminal {
+    width: 90%;
+    max-width: 800px;
+    background: #101010;
+    padding: 20px;
+    box-shadow: 0 0 20px #00ff00;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  /* Glitch heading effect */
+  .glitch {
+    font-size: 2em;
+    position: relative;
+    color: #ccc;
+    animation: glitch 1s infinite;
+  }
+
+  @keyframes glitch {
+    0% { text-shadow: 2px 0 #ff00c8, -2px 0 #00fff9; }
+    20% { text-shadow: -2px -2px #ff00c8, 2px 2px #00fff9; }
+    40% { text-shadow: 2px 2px #ff00c8, -2px -2px #00fff9; }
+    60% { text-shadow: -2px 2px #ff00c8, 2px -2px #00fff9; }
+    80% { text-shadow: 2px -2px #ff00c8, -2px 2px #00fff9; }
+    100% { text-shadow: 2px 0 #ff00c8, -2px 0 #00fff9; }
+  }
+
+  /* Terminal text animation */
+  .output {
+    font-size: 1em;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  /* Blinking cursor */
+  .cursor {
+    display: inline-block;
+    width: 10px;
+    background: #cccccc;
+    margin-left: 2px;
+    animation: blink 0.7s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
+  }
 </style>
 </head>
 <body>
-<div id="terminal">
-YOUTUBE DOWNLOADER TERMINAL v1.0
-> Paste YouTube URL below
->_
+
+<div class="terminal">
+  <div class="glitch">WELCOME TO MY TERMINAL SITE</div>
+  <div class="output" id="terminalOutput"></div>
+  <div class="cursor" id="cursor"></div>
 </div>
 
 <script>
-const terminal = document.getElementById('terminal');
+const terminalOutput = document.getElementById('terminalOutput');
+const cursor = document.getElementById('cursor');
 
-function appendLog(text){
-  const div = document.createElement('div');
-  div.className = 'log-entry';
-  div.textContent = text;
-  terminal.insertBefore(div, inputLine);
-  terminal.scrollTop = terminal.scrollHeight;
-}
+const lines = [
+  "Initializing terminal...",
+  "Loading system files...",
+  "Welcome, user!",
+  "Type 'help' to see commands."
+];
 
-// Input line
-const inputLine = document.createElement('div');
-inputLine.innerHTML = '> <input id="urlInput" autocomplete="off" autofocus> <span class="cursor"></span>';
-terminal.appendChild(inputLine);
-const input = document.getElementById('urlInput');
+let lineIndex = 0;
+let charIndex = 0;
 
-// Simulate fetching video info
-input.addEventListener('keydown', async e=>{
-  if(e.key === 'Enter'){
-    const url = input.value.trim();
-    if(!url) return;
-    appendLog(`> ${url}`);
-    input.value = '';
-    appendLog('Fetching video info...');
-    
-    setTimeout(()=>{
-      appendLog('Title: Amazing Video Tutorial');
-      appendLog('Duration: 5:32');
-      appendLog('Available formats: mp4 720p, mp4 480p, mp3 128kbps');
-      appendLog('Type command: download mp4 720p');
-    }, 1500);
-  }
-});
-
-// Optional: simulate download command
-document.addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){
-    const val = input.value.trim().toLowerCase();
-    if(val.startsWith('download')){
-      appendLog(`Starting ${val.split(' ')[1]} download...`);
-      let progress = 0;
-      const interval = setInterval(()=>{
-        progress += Math.floor(Math.random()*15);
-        if(progress>=100){ progress=100; clearInterval(interval); appendLog('Download Complete ✅'); }
-        else appendLog(`Progress: ${progress}%`);
-      },500);
-      input.value = '';
+function typeLine() {
+  if(lineIndex < lines.length) {
+    if(charIndex < lines[lineIndex].length) {
+      terminalOutput.textContent += lines[lineIndex][charIndex];
+      charIndex++;
+      setTimeout(typeLine, 50); // typing speed
+    } else {
+      terminalOutput.textContent += "\n";
+      lineIndex++;
+      charIndex = 0;
+      setTimeout(typeLine, 500);
     }
   }
-});
+}
+
+typeLine();
 </script>
+
 </body>
 </html>
